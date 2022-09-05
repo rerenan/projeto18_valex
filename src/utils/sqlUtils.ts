@@ -1,4 +1,5 @@
-export function mapObjectToUpdateQuery({ object, offset = 1 }) {
+import { CardUpdateData } from './../repositories/cardRepository';
+export function mapObjectToUpdateQuery({ object, offset = 1 }: {object: CardUpdateData, offset: number}) {
   const objectColumns = Object.keys(object)
     .map((key, index) => `"${key}"=$${index + offset}`)
     .join(",");
