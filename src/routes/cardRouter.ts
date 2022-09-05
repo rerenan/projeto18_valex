@@ -8,6 +8,6 @@ import { activateCardSchema, createCardSchema } from "../schemas/cardSchemas";
 const cardRouter = Router();
 
 cardRouter.post("/create", apiKeyValidator, schemaValidator(createCardSchema), createCard);
-cardRouter.post("/active", schemaValidator(activateCardSchema), activateCard);
+cardRouter.put("/active", schemaValidator(activateCardSchema), activateCard);
 
 export default cardRouter;

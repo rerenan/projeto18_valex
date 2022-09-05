@@ -47,11 +47,9 @@ export async function createNewCard(employee: Employee, type: TransactionTypes) 
 };
 
 export async function activateCard(cardId:number, cvcNumber: string, password: string) {
-    const card = await cardRepository.findById(cardId);
-    if(!card) throw notFoundError("card");
     
-    const isExpired = compareDate(card.expirationDate);
-    if(isExpired) throw {type:"preconditionFailed", message: "The card has expired"};
+    const card = await findCardById(cardId);
+    validateCard(card, true, true, false);
 
     if(!card.isBlocked) throw {type: "conflict", message:"The card is already activated"};
 
@@ -68,6 +66,27 @@ export async function activateCard(cardId:number, cvcNumber: string, password: s
     await cardRepository.update(cardId, cardData);
     return true;
 
+};
+
+export async function findCardById(id: number){
+    const card = await cardRepository.findById(id);
+    if(!card) throw notFoundError("card");
+    return card;
+};
+
+export async function validateCard(card: cardRepository.Card, notActive: boolean, notExpired: boolean, notBlocked: boolean){
+    if(notActive){
+        if(card.password) throw {type: "conflict", message:"The card already is activated"}
+    }
+    if(notExpired){
+        const isExpired = compareDate(card.expirationDate);
+        if(isExpired) throw {type:"preconditionFailed", message: "The card has expired"};
+    }
+    
+    if(notBlocked){
+        if(card.isBlocked) throw {type: "conflict", message:"The card is blocked"};
+    }
+   
 }
 
 function formatName(name: string){
@@ -90,7 +109,6 @@ function compareDate(compareDate: string){
     const expirationYear = Number(compareDate[length-2] + compareDate[length-1]);
     const expirationMounth = Number((compareDate[0] + compareDate[1]).replace("/",""));
 
-    console.log(expirationMounth, currentMounth)
     if(expirationYear < currentYear ) return false;
     if(expirationMounth < currentMounth) return false;
     return true;

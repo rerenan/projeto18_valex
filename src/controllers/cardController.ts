@@ -18,3 +18,7 @@ export async function activateCard(req: Request, res: Response) {
 
     res.status(200).send("activated");
 }
+
+export async function blockedCard(req: Request, res: Response) {
+    const {cardId, password} = req.body;
+}
