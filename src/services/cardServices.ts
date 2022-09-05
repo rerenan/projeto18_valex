@@ -49,7 +49,7 @@ export async function createNewCard(employee: Employee, type: TransactionTypes) 
 export async function activateCard(cardId:number, cvcNumber: string, password: string) {
     
     const card = await findCardById(cardId);
-    validateCard(card, true, true, false);
+    validateCard(card, false, true, false);
 
     if(!card.isBlocked) throw {type: "conflict", message:"The card is already activated"};
 
@@ -72,8 +72,8 @@ export async function blockCard(cardId:number, password: string) {
     const card = await findCardById(cardId);
     validateCard(card, false, true, true);
     
-    const validatePassword = bcrypt.compareSync(password, card.password || "");
-    if(!validatePassword) throw {type: "unauthorized", message: "Password is wrong"};
+    validatePassword(password, card.password || "");
+
     const uptadeData = {
         isBlocked: true
     }
@@ -87,8 +87,8 @@ export async function unblockCard(cardId:number, password: string) {
     
     validateCard(card, false, true, false);
     
-    const validatePassword = bcrypt.compareSync(password, card.password || "");
-    if(!validatePassword) throw {type: "unauthorized", message: "Password is wrong"};
+    validatePassword(password, card.password || "");
+
     const uptadeData = {
         isBlocked: false
     }
@@ -103,8 +103,16 @@ export async function findCardById(id: number){
     return card;
 };
 
-export function validateCard(card: cardRepository.Card, notActive: boolean, notExpired: boolean, notBlocked: boolean){
-    if(notActive){
+export function validatePassword(password: string, hashedPassword: string){
+    const validatePassword = bcrypt.compareSync(password, hashedPassword);
+    if(!validatePassword) throw {type: "unauthorized", message: "Password is wrong"};
+}
+
+export function validateCard(card: cardRepository.Card, active: boolean, notExpired: boolean, notBlocked: boolean){
+    if(active){
+        if(!card.password) throw {type: "conflict", message:"The card is not activated"}
+    }
+    else{
         if(card.password) throw {type: "conflict", message:"The card already is activated"}
     }
     if(notExpired){
@@ -115,7 +123,7 @@ export function validateCard(card: cardRepository.Card, notActive: boolean, notE
     if(notBlocked){
         if(card.isBlocked) throw {type: "conflict", message:"The card is blocked"};
     }else{
-        if(!card.isBlocked) throw {type: "conflict", message:"Card already blocked"}
+        if(!card.isBlocked) throw {type: "conflict", message:"Card not blocked"}
     }
    
 }
