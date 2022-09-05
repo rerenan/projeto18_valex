@@ -82,13 +82,28 @@ export async function blockCard(cardId:number, password: string) {
     return;
 }
 
+export async function unblockCard(cardId:number, password: string) {
+    const card = await findCardById(cardId);
+    
+    validateCard(card, false, true, false);
+    
+    const validatePassword = bcrypt.compareSync(password, card.password || "");
+    if(!validatePassword) throw {type: "unauthorized", message: "Password is wrong"};
+    const uptadeData = {
+        isBlocked: false
+    }
+    
+    await cardRepository.update(cardId,uptadeData);
+    return;
+}
+
 export async function findCardById(id: number){
     const card = await cardRepository.findById(id);
     if(!card) throw notFoundError("card");
     return card;
 };
 
-export async function validateCard(card: cardRepository.Card, notActive: boolean, notExpired: boolean, notBlocked: boolean){
+export function validateCard(card: cardRepository.Card, notActive: boolean, notExpired: boolean, notBlocked: boolean){
     if(notActive){
         if(card.password) throw {type: "conflict", message:"The card already is activated"}
     }
@@ -99,6 +114,8 @@ export async function validateCard(card: cardRepository.Card, notActive: boolean
     
     if(notBlocked){
         if(card.isBlocked) throw {type: "conflict", message:"The card is blocked"};
+    }else{
+        if(!card.isBlocked) throw {type: "conflict", message:"Card already blocked"}
     }
    
 }

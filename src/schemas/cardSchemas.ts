@@ -17,5 +17,6 @@ const blockCardSchema = joi.object({
 });
 export {
     createCardSchema,
-    activateCardSchema
+    activateCardSchema,
+    blockCardSchema
 };
