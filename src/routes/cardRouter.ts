@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { activateCard, createCard } from "../controllers/cardController";
+import { activateCard, blockCard, createCard } from "../controllers/cardController";
 import apiKeyValidator from "../middlewares/apiKeyValidator";
 import schemaValidator from "../middlewares/schemaValidator";
 import { activateCardSchema, createCardSchema } from "../schemas/cardSchemas";
@@ -9,5 +9,6 @@ const cardRouter = Router();
 
 cardRouter.post("/create", apiKeyValidator, schemaValidator(createCardSchema), createCard);
 cardRouter.put("/active", schemaValidator(activateCardSchema), activateCard);
+cardRouter.put("/block", blockCard)
 
 export default cardRouter;

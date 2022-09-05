@@ -68,6 +68,20 @@ export async function activateCard(cardId:number, cvcNumber: string, password: s
 
 };
 
+export async function blockCard(cardId:number, password: string) {
+    const card = await findCardById(cardId);
+    validateCard(card, false, true, true);
+    
+    const validatePassword = bcrypt.compareSync(password, card.password || "");
+    if(!validatePassword) throw {type: "unauthorized", message: "Password is wrong"};
+    const uptadeData = {
+        isBlocked: true
+    }
+    
+    await cardRepository.update(cardId,uptadeData);
+    return;
+}
+
 export async function findCardById(id: number){
     const card = await cardRepository.findById(id);
     if(!card) throw notFoundError("card");
